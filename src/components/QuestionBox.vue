@@ -1,8 +1,40 @@
+Skip to content
+Search or jump to…
+
+Pull requests
+Issues
+Marketplace
+Explore
+
+@Fubarsarmands
+gwenf
+/
+vue-quiz
+6
+9657
+Code
+Issues
+7
+Pull requests
+7
+Actions
+Projects
+Wiki
+Security
+Insights
+vue-quiz/src/components/QuestionBox.vue
+
+gwenf finished application
+Latest commit ffb4f57 on Mar 8, 2019
+History
+0 contributors
+133 lines (118 sloc)  2.65 KB
+
 <template>
-    <div clas="question-box-container">
-        <b-jumbotron >
+    <div class="question-box-container">
+        <b-jumbotron>
             <template slot="lead">
-               {{ currentQuestion.question}}
+                {{ currentQuestion.question }}
             </template>
 
             <hr class="my-4" />
@@ -11,20 +43,21 @@
                 <b-list-group-item
                         v-for="(answer, index) in answers"
                         :key="index"
-                        @click="selectAnswer(index)"
-                        :class=" [ selectedIndex === index ? 'selected' : '' ]"
+                        @click.prevent="selectAnswer(index)"
+                        :class="answerClass(index)"
                 >
-                    {{answer}}
+                    {{ answer }}
                 </b-list-group-item>
             </b-list-group>
 
             <b-button
                     variant="primary"
                     @click="submitAnswer"
+                    :disabled="selectedIndex === null || answered"
             >
                 Submit
             </b-button>
-            <b-button @click="next" variant="success" href="#">
+            <b-button @click="next" variant="success">
                 Next
             </b-button>
         </b-jumbotron>
@@ -39,12 +72,12 @@
             next: Function,
             increment: Function
         },
-        data() {
+        data: function() {
             return {
-                selectedIndex:null,
-                shuffledAnswers: []
-
-
+                selectedIndex: null,
+                correctIndex: null,
+                shuffledAnswers: [],
+                answered: false
             }
         },
         computed: {
@@ -59,11 +92,10 @@
                 immediate: true,
                 handler() {
                     this.selectedIndex = null
+                    this.answered = false
                     this.shuffleAnswers()
                 }
             }
-
-
         },
         methods: {
             selectAnswer(index) {
@@ -71,19 +103,32 @@
             },
             submitAnswer() {
                 let isCorrect = false
-
-                if (this.selectedIndex === this.correctIndex){
+                if (this.selectedIndex === this.correctIndex) {
                     isCorrect = true
                 }
-
-               this.increment(isCorrect)
+                this.answered = true
+                this.increment(isCorrect)
             },
             shuffleAnswers() {
                 let answers = [...this.currentQuestion.incorrect_answers, this.currentQuestion.correct_answer]
                 this.shuffledAnswers = _.shuffle(answers)
+                this.correctIndex = this.shuffledAnswers.indexOf(this.currentQuestion.correct_answer)
+            },
+            answerClass(index) {
+                let answerClass = ''
+                if (!this.answered && this.selectedIndex === index) {
+                    answerClass = 'selected'
+                } else if (this.answered && this.correctIndex === index) {
+                    answerClass = 'correct'
+                } else if (this.answered &&
+                    this.selectedIndex === index &&
+                    this.correctIndex !== index
+                ) {
+                    answerClass = 'incorrect'
+                }
+                return answerClass
             }
         }
-
     }
 </script>
 
@@ -108,3 +153,4 @@
         background-color: red;
     }
 </style>
+
